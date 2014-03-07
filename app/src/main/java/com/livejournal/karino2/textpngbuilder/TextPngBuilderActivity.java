@@ -4,21 +4,17 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.os.Build;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.File;
@@ -35,8 +31,26 @@ public class TextPngBuilderActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text_png_builder);
 
-        TextImageView tiv = (TextImageView)findViewById(R.id.textImageView);
+    }
 
+    private void handleDone() {
+        TextImage textImage = new TextImage();
+        textImage.resize(600, 400);
+        EditText et = (EditText)findViewById(R.id.editText);
+        String text = et.getText().toString();
+        int lastEol = 0;
+        while(text.length() > lastEol) {
+            int eol = text.indexOf('\n', lastEol);
+            if(eol == -1) {
+                textImage.addLine(text.substring(lastEol));
+                break;
+            }
+            textImage.addLine(text.substring(lastEol, eol));
+            lastEol = eol+1;
+        }
+        textImage.autoCharSize();
+        textImage.rasterlize();
+        handleDoneWithBitmap(textImage.bitmap());
     }
 
 
@@ -55,35 +69,36 @@ public class TextPngBuilderActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_done) {
-            TextImageView tiv = (TextImageView)findViewById(R.id.textImageView);
-            Bitmap bitmap = tiv.getResultBitmap();
-
-            if(bitmap == null) {
-                showMessage("No text set.");
-                setResult(Activity.RESULT_CANCELED);
-                finish();
-                return true;
-            }
-            File file = null;
-            try {
-                file = saveBitmap(bitmap);
-            } catch (IOException e) {
-                showMessage("Fail to save: " + e.getMessage());
-                setResult(Activity.RESULT_CANCELED);
-                finish();
-                return true;
-            }
-            Uri uri = putFileToContentDB(file);
-            Intent intent = new Intent();
-            intent.setData(uri);
-            setResult(Activity.RESULT_OK, intent);
-            finish();
-
+            handleDone();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    private boolean handleDoneWithBitmap(Bitmap bitmap) {
+        if(bitmap == null) {
+            showMessage("No text set.");
+            setResult(Activity.RESULT_CANCELED);
+            finish();
+            return true;
+        }
+        File file = null;
+        try {
+            file = saveBitmap(bitmap);
+        } catch (IOException e) {
+            showMessage("Fail to save: " + e.getMessage());
+            setResult(Activity.RESULT_CANCELED);
+            finish();
+            return true;
+        }
+        Uri uri = putFileToContentDB(file);
+        Intent intent = new Intent();
+        intent.setData(uri);
+        setResult(Activity.RESULT_OK, intent);
+        finish();
+
+        return true;
+    }
 
 
     public void showMessage(String msg) {
