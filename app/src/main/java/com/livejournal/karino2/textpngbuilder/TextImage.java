@@ -150,14 +150,4 @@ public class TextImage {
         }
     }
 
-    public void setTestString()
-    {
-        clearLines();
-        addLine( "ハピネスチャージ" );
-        addLine( "pretty cure" );
-        addLine( "は面白い" );
-        addLine( "1" );
-        addLine( "2" );
-        addLine( "3" );
-    }
 }
