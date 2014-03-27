@@ -154,8 +154,6 @@ public class TextPngBuilderActivity extends ActionBarActivity {
                                 pictureObj.getWidth(),
                                 pictureObj.getHeight(),
                                 Bitmap.Config.ARGB_8888);
-                        // why 400?
-                        // Log.d("TextPngBuilder", "picture width: " + pictureObj.getWidth());
 
                         Canvas canvas = new Canvas(bitmap);
                         pictureObj.draw(canvas);
@@ -175,6 +173,7 @@ public class TextPngBuilderActivity extends ActionBarActivity {
         }
 
         WebView webView = (WebView)popupView.findViewById(R.id.webView);
+        webView.getSettings().setUseWideViewPort(true);
         StringBuilder builder = new StringBuilder();
         builder.append("<html><head><style>");
         builder.append("body { ");
@@ -191,12 +190,12 @@ public class TextPngBuilderActivity extends ActionBarActivity {
         builder.append(";");
 
         builder.append("}");
-        builder.append("</style></head><body>");
+        builder.append("</style></head><body><pre>");
         for(String line : strings) {
             builder.append(escapeHtml(line));
             builder.append("<br>");
         }
-        builder.append("</body></html>");
+        builder.append("</pre></body></html>");
 
 
         webView.loadData(builder.toString(), "text/html; charset=UTF-8", null);
