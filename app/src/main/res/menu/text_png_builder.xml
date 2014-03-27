@@ -3,6 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.livejournal.karino2.textpngbuilder.TextPngBuilderActivity" >
 
+    <item android:id="@+id/action_preview"
+        android:title="Preview"
+        android:orderInCategory="90"
+        app:showAsAction="always" />
+
      <item android:id="@+id/action_done"
         android:title="Done"
         android:orderInCategory="100"

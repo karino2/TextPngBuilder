@@ -13,6 +13,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -40,6 +41,45 @@ public class TextPngBuilderActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text_png_builder);
 
+
+        NumberComboBox sizeBox = (NumberComboBox)findViewById(R.id.size_combobox);
+        sizeBox.setIntegerValue(12);
+        sizeBox.findViewById(R.id.combo_edit).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hidePopupWindow();
+            }
+        });
+        ComboBox fontFamily = (ComboBox) findViewById(R.id.fontfamily_combobox);
+        fontFamily.setStringValue("Verdana, Roboto, sans-serif");
+        fontFamily.findViewById(R.id.combo_edit).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hidePopupWindow();
+            }
+        });
+
+        EditText et = (EditText)findViewById(R.id.editText);
+        et.requestFocus();
+        et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(hasFocus)
+                    hidePopupWindow();
+            }
+        });
+        et.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hidePopupWindow();
+            }
+        });
+
+    }
+
+    private void hidePopupWindow() {
+        if(popupWindow != null)
+            popupWindow.dismiss();
     }
 
     private List<String> stringToStringList(String text) {
@@ -58,6 +98,11 @@ public class TextPngBuilderActivity extends ActionBarActivity {
     }
 
     private void handleDone() {
+        preview = false;
+        handleDoneOrPreview();
+    }
+
+    private void handleDoneOrPreview() {
         EditText et = (EditText)findViewById(R.id.editText);
         String text = et.getText().toString();
         List<String> strings = stringToStringList(text);
@@ -74,8 +119,10 @@ public class TextPngBuilderActivity extends ActionBarActivity {
     }
 
 
+    boolean preview = false;
     boolean isPreview() {
-        return isChecked(R.id.checkTest);
+        return preview;
+        // return isChecked(R.id.checkTest);
     }
 
     private boolean isChecked(int resId) {
@@ -107,6 +154,8 @@ public class TextPngBuilderActivity extends ActionBarActivity {
                                 pictureObj.getWidth(),
                                 pictureObj.getHeight(),
                                 Bitmap.Config.ARGB_8888);
+                        // why 400?
+                        // Log.d("TextPngBuilder", "picture width: " + pictureObj.getWidth());
 
                         Canvas canvas = new Canvas(bitmap);
                         pictureObj.draw(canvas);
@@ -121,6 +170,8 @@ public class TextPngBuilderActivity extends ActionBarActivity {
             popupWindow = new PopupWindow(popupView,editText.getMeasuredWidth(), editText.getMeasuredHeight()*3/4, false);
 //            popupWindow = new PopupWindow(popupView, 600, 400, false);
             popupWindow.showAtLocation(findViewById(R.id.editText), Gravity.BOTTOM, 0, 0);
+        } else {
+            popupWindow.showAtLocation(findViewById(R.id.editText), Gravity.BOTTOM, 0, 0);
         }
 
         WebView webView = (WebView)popupView.findViewById(R.id.webView);
@@ -129,7 +180,17 @@ public class TextPngBuilderActivity extends ActionBarActivity {
         builder.append("body { ");
         if(isVertical)
             builder.append("-webkit-writing-mode: vertical-rl;");
-        builder.append("font-size: x-large; }");
+
+        builder.append("font-size: ");
+        builder.append(String.valueOf(getFontSize()));
+        builder.append("pt; ");
+
+        // font-family: "Bodoni MT", Didot, "Didot LT STD", "Hoefler Text", Garamond, "Times New Roman", serif;
+        builder.append("font-family: ");
+        builder.append(getFontFamily());
+        builder.append(";");
+
+        builder.append("}");
         builder.append("</style></head><body>");
         for(String line : strings) {
             builder.append(escapeHtml(line));
@@ -139,6 +200,22 @@ public class TextPngBuilderActivity extends ActionBarActivity {
 
 
         webView.loadData(builder.toString(), "text/html; charset=UTF-8", null);
+    }
+
+    private String getFontFamily() {
+        ComboBox combo = (ComboBox)findViewById(R.id.fontfamily_combobox);
+        // simple sanitize.
+        return combo.getStringValue().replace("}", "");
+    }
+
+    private int getFontSize() {
+        NumberComboBox number = (NumberComboBox)findViewById(R.id.size_combobox);
+        try {
+            return number.getIntegerValue();
+        }catch(NumberFormatException e) {
+            return 12; // default;
+        }
+
     }
 
     private void whiteToTransparent(Bitmap bitmap) {
@@ -172,14 +249,24 @@ public class TextPngBuilderActivity extends ActionBarActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_done) {
-            handleDone();
-            return true;
+        switch(id) {
+            case R.id.action_done:
+                handleDone();
+                return true;
+            case R.id.action_preview:
+                handlePreview();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    private void handlePreview() {
+        preview = true;
+        handleDoneOrPreview();
+    }
+
     private boolean handleDoneWithBitmap(Bitmap bitmap) {
+        hidePopupWindow();
         if(bitmap == null) {
             showMessage("No text set.");
             setResult(Activity.RESULT_CANCELED);

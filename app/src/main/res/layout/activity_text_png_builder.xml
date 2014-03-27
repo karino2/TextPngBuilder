@@ -12,11 +12,15 @@
             android:text="Vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
-        <CheckBox
-            android:id="@+id/checkTest"
-            android:text="Test"
+        <com.livejournal.karino2.textpngbuilder.NumberComboBox
+            android:id="@+id/size_combobox"
+            android:layout_marginLeft="5dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"></com.livejournal.karino2.textpngbuilder.NumberComboBox>
+        <com.livejournal.karino2.textpngbuilder.ComboBox
+            android:id="@+id/fontfamily_combobox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"></com.livejournal.karino2.textpngbuilder.ComboBox>
         </LinearLayout>
     <EditText
         android:layout_width="match_parent"
