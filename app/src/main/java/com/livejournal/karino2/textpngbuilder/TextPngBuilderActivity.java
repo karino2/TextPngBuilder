@@ -117,7 +117,9 @@ public class TextPngBuilderActivity extends ActionBarActivity {
 
         WebView webView = (WebView)popupView.findViewById(R.id.webView);
         StringBuilder builder = new StringBuilder();
-        builder.append("<html><body style=\"-webkit-writing-mode: vertical-rl;font-size: x-large;\">");
+        builder.append("<html><head><style>");
+        builder.append("body { -webkit-writing-mode: vertical-rl;font-size: x-large; }");
+        builder.append("</style></head><body>");
         for(String line : strings) {
             builder.append(escapeHtml(line));
             builder.append("<br>");
