@@ -13,7 +13,6 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -66,13 +65,16 @@ public class TextPngBuilderActivity extends ActionBarActivity {
         if(isChecked(R.id.checkVertical)) {
             handleDoneWithVerticalTextList(strings);
         }else {
-            Bitmap bitmap = textListToBitmap(strings);
-            handleDoneWithBitmap(bitmap);
+            handleDoneWithHorizontalTextList(strings);
         }
     }
 
+    private void handleDoneWithHorizontalTextList(List<String> strings) {
+        handleDoneWithTextList(strings, false);
+    }
 
-    boolean isTest() {
+
+    boolean isPreview() {
         return isChecked(R.id.checkTest);
     }
 
@@ -84,6 +86,12 @@ public class TextPngBuilderActivity extends ActionBarActivity {
     PopupWindow popupWindow;
     View popupView;
     private void handleDoneWithVerticalTextList(List<String> strings) {
+        handleDoneWithTextList(strings, true);
+
+
+}
+
+    private void handleDoneWithTextList(List<String> strings, boolean isVertical) {
         if(popupView == null) {
             LayoutInflater inflater = getLayoutInflater();
             popupView = inflater.inflate(R.layout.popup_webview, null);
@@ -92,10 +100,10 @@ public class TextPngBuilderActivity extends ActionBarActivity {
             webView.setPictureListener(new WebView.PictureListener() {
                 @Override
                 public void onNewPicture(WebView view, Picture picture) {
-                    if(!isTest()) {
+                    if(!isPreview()) {
                         Picture pictureObj = view.capturePicture();
 
-                        Bitmap  bitmap = Bitmap.createBitmap(
+                        Bitmap bitmap = Bitmap.createBitmap(
                                 pictureObj.getWidth(),
                                 pictureObj.getHeight(),
                                 Bitmap.Config.ARGB_8888);
@@ -118,7 +126,10 @@ public class TextPngBuilderActivity extends ActionBarActivity {
         WebView webView = (WebView)popupView.findViewById(R.id.webView);
         StringBuilder builder = new StringBuilder();
         builder.append("<html><head><style>");
-        builder.append("body { -webkit-writing-mode: vertical-rl;font-size: x-large; }");
+        builder.append("body { ");
+        if(isVertical)
+            builder.append("-webkit-writing-mode: vertical-rl;");
+        builder.append("font-size: x-large; }");
         builder.append("</style></head><body>");
         for(String line : strings) {
             builder.append(escapeHtml(line));
@@ -128,9 +139,7 @@ public class TextPngBuilderActivity extends ActionBarActivity {
 
 
         webView.loadData(builder.toString(), "text/html; charset=UTF-8", null);
-
-
-}
+    }
 
     private void whiteToTransparent(Bitmap bitmap) {
         int[] buf = new int[bitmap.getWidth()*bitmap.getHeight()];
@@ -147,17 +156,6 @@ public class TextPngBuilderActivity extends ActionBarActivity {
         return line.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
     }
 
-
-    private Bitmap textListToBitmap(List<String> strings) {
-        TextImage textImage = new TextImage();
-        textImage.resize(600, 400);
-        for(String str : strings) {
-            textImage.addLine(str);
-        }
-        textImage.autoCharSize();
-        textImage.rasterlize();
-        return textImage.bitmap();
-    }
 
 
     @Override
