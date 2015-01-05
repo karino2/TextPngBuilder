@@ -41,7 +41,10 @@ public class TextPngBuilderActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        loadTextStyleFromPrefs();
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_text_png_builder);
 
         EditText et = (EditText)findViewById(R.id.editText);
@@ -54,9 +57,6 @@ public class TextPngBuilderActivity extends ActionBarActivity {
                 showStylePopup();
             }
         });
-
-
-
     }
 
     @Override
@@ -212,6 +212,7 @@ public class TextPngBuilderActivity extends ActionBarActivity {
                 public void run() {
                     View root = findViewById(R.id.rootLayout);
                     stylePopup = new PopupWindow(styleView, root.getMeasuredWidth(), root.getMeasuredHeight() * 1 / 3, false);
+                    stylePopup.setFocusable(true);
                     stylePopup.showAsDropDown(findViewById(R.id.buttonStyle));
                 }
             });
@@ -271,10 +272,26 @@ public class TextPngBuilderActivity extends ActionBarActivity {
                     ((CheckBox) styleView.findViewById(R.id.checkVertical)).isChecked(),
                     getFontFamily(styleView),
                     getFontSize(styleView),
-                    new File(((EditText)styleView.findViewById(R.id.editTextFontPath)).getText().toString())
+                    getFontPathFromPopup()
             );
             textStyle = newStyle;
         }
+        saveTextStyle();
+    }
+
+    private File getFontPathFromPopup() {
+        String path = ((EditText)styleView.findViewById(R.id.editTextFontPath)).getText().toString();
+        if(path.equals(""))
+            return null;
+        return new File(path);
+    }
+
+    private void saveTextStyle() {
+        textStyle.saveTo(getSharedPreferences("styleprefs", MODE_PRIVATE));
+    }
+
+    private void loadTextStyleFromPrefs() {
+        textStyle.loadFrom(getSharedPreferences("styleprefs", MODE_PRIVATE));
     }
 
 

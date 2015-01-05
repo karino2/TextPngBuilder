@@ -1,5 +1,6 @@
 package com.livejournal.karino2.textpngbuilder;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import java.io.File;
@@ -9,8 +10,10 @@ import java.util.List;
  * Created by karino on 1/5/15.
  */
 public class TextStyle {
+    static final String DEFAULT_FONT_FAMILY = "Verdana, Roboto, sans-serif";
+    static final int DEFAULT_FONT_SIZE = 12;
     public TextStyle() {
-        this(false, "Verdana, Roboto, sans-serif", 12, null);
+        this(false, DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, null);
     }
 
     File fontPath;
@@ -65,11 +68,33 @@ public class TextStyle {
         fontSize = savedInstanceState.getInt("FONT_SIZE");
         fontFamily = savedInstanceState.getString("FONT_FAMILY");
         String fontPathStr = savedInstanceState.getString("EXTERNAL_FONT_PATH");
-        if(!fontPathStr.equals(""))
+        if(fontPathStr.equals(""))
             fontPath = null;
         else
             fontPath = new File(fontPathStr);
     }
+
+
+    public void loadFrom(SharedPreferences prefs) {
+        vertical = prefs.getBoolean("IS_VERTICAL", false);
+        fontSize = prefs.getInt("FONT_SIZE", DEFAULT_FONT_SIZE);
+        fontFamily = prefs.getString("FONT_FAMILY", DEFAULT_FONT_FAMILY);
+        String fontPathStr = prefs.getString("EXTERNAL_FONT_PATH", "");
+        if(fontPathStr.equals(""))
+            fontPath = null;
+        else
+            fontPath = new File(fontPathStr);
+    }
+
+    public void saveTo(SharedPreferences prefs) {
+        prefs.edit()
+        .putBoolean("IS_VERTICAL", vertical)
+        .putInt("FONT_SIZE", fontSize)
+        .putString("FONT_FAMILY", fontFamily)
+        .putString("EXTERNAL_FONT_PATH", getFontPathString())
+        .commit();
+    }
+
 
     public void setFontPath(File newFontPath) {
         fontPath = newFontPath;
@@ -118,4 +143,5 @@ public class TextStyle {
     public void setFontFamily(String fontFamily) {
         this.fontFamily = fontFamily;
     }
+
 }
