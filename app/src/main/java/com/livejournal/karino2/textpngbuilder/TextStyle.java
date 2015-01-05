@@ -112,6 +112,7 @@ public class TextStyle {
         }
 
         builder.append("body { ");
+        builder.append("white-space: nowrap; ");
         if(isVertical())
             builder.append("-webkit-writing-mode: vertical-rl;");
 
