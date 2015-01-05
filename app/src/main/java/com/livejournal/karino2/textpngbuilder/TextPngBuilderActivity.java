@@ -281,6 +281,7 @@ public class TextPngBuilderActivity extends ActionBarActivity {
     private void handleDoneWithTextList(List<String> strings) {
         WebView webView = (WebView)findViewById(R.id.webView);
         webView.getSettings().setUseWideViewPort(true);
+        webView.getSettings().setLoadWithOverviewMode(true);
 
         webView.setPictureListener(new WebView.PictureListener() {
             @Override
