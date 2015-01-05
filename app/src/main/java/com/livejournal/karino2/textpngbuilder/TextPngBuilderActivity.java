@@ -46,19 +46,7 @@ public class TextPngBuilderActivity extends ActionBarActivity {
 
         EditText et = (EditText)findViewById(R.id.editText);
         et.requestFocus();
-        et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(hasFocus)
-                    hidePopupWindow();
-            }
-        });
-        et.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                hidePopupWindow();
-            }
-        });
+
 
         ((Button)findViewById(R.id.buttonStyle)).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,11 +56,6 @@ public class TextPngBuilderActivity extends ActionBarActivity {
         });
 
 
-    }
-
-    private void hidePopupWindow() {
-        if(popupWindow != null)
-            popupWindow.dismiss();
     }
 
     private List<String> stringToStringList(String text) {
@@ -96,6 +79,8 @@ public class TextPngBuilderActivity extends ActionBarActivity {
     }
 
     private void handleDoneOrPreview() {
+        updateTextStyle();
+
         EditText et = (EditText)findViewById(R.id.editText);
         String text = et.getText().toString();
         List<String> strings = stringToStringList(text);
@@ -136,20 +121,8 @@ public class TextPngBuilderActivity extends ActionBarActivity {
 
             NumberComboBox sizeBox = (NumberComboBox)styleView.findViewById(R.id.size_combobox);
             sizeBox.setIntegerValue(12);
-            sizeBox.findViewById(R.id.combo_edit).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    hidePopupWindow();
-                }
-            });
             ComboBox fontFamily = (ComboBox) styleView.findViewById(R.id.fontfamily_combobox);
             fontFamily.setStringValue("Verdana, Roboto, sans-serif");
-            fontFamily.findViewById(R.id.combo_edit).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    hidePopupWindow();
-                }
-            });
 
             ((Button)styleView.findViewById(R.id.buttonClose)).setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -162,18 +135,12 @@ public class TextPngBuilderActivity extends ActionBarActivity {
             ((Button)styleView.findViewById(R.id.buttonApply)).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    TextStyle newStyle = new TextStyle(
-                            ((CheckBox) styleView.findViewById(R.id.checkVertical)).isChecked(),
-                            getFontFamily(styleView),
-                            getFontSize(styleView)
-                    );
-                    textStyle = newStyle;
                     handlePreview();
                 }
             });
 
-            View editText = findViewById(R.id.editText);
-            stylePopup = new PopupWindow(styleView,editText.getMeasuredWidth(), editText.getMeasuredHeight()*1/5, false);
+            View root = findViewById(R.id.rootLayout);
+            stylePopup = new PopupWindow(styleView,root.getMeasuredWidth(), root.getMeasuredHeight()*1/3, false);
 
 
             stylePopup.showAsDropDown(findViewById(R.id.buttonStyle));
@@ -183,53 +150,41 @@ public class TextPngBuilderActivity extends ActionBarActivity {
         }
     }
 
+    private void updateTextStyle() {
+        TextStyle newStyle = new TextStyle(
+                ((CheckBox) styleView.findViewById(R.id.checkVertical)).isChecked(),
+                getFontFamily(styleView),
+                getFontSize(styleView)
+        );
+        textStyle = newStyle;
+    }
 
-
-    PopupWindow popupWindow;
-    View popupView;
 
     private void handleDoneWithTextList(List<String> strings) {
-        if(popupView == null) {
-            LayoutInflater inflater = getLayoutInflater();
-            popupView = inflater.inflate(R.layout.popup_webview, null);
-            WebView webView = (WebView)popupView.findViewById(R.id.webView);
-
-            webView.setPictureListener(new WebView.PictureListener() {
-                @Override
-                public void onNewPicture(WebView view, Picture picture) {
-                    if(!isPreview()) {
-                        Picture pictureObj = view.capturePicture();
-
-                        Bitmap bitmap = Bitmap.createBitmap(
-                                pictureObj.getWidth(),
-                                pictureObj.getHeight(),
-                                Bitmap.Config.ARGB_8888);
-
-                        Canvas canvas = new Canvas(bitmap);
-                        pictureObj.draw(canvas);
-                        whiteToTransparent(bitmap);
-
-                        handleDoneWithBitmap(bitmap);
-                    }
-                }
-            });
-
-            View editText = findViewById(R.id.editText);
-            popupWindow = new PopupWindow(popupView,editText.getMeasuredWidth(), editText.getMeasuredHeight()*3/4, false);
-//            popupWindow = new PopupWindow(popupView, 600, 400, false);
-            popupWindow.showAtLocation(findViewById(R.id.editText), Gravity.BOTTOM, 0, 0);
-
-
-        } else {
-            popupWindow.showAtLocation(findViewById(R.id.editText), Gravity.BOTTOM, 0, 0);
-        }
-
-        if(stylePopup!= null) {
-            showStylePopup(); // try to re-order
-        }
-
-        WebView webView = (WebView)popupView.findViewById(R.id.webView);
+        WebView webView = (WebView)findViewById(R.id.webView);
         webView.getSettings().setUseWideViewPort(true);
+
+        webView.setPictureListener(new WebView.PictureListener() {
+            @Override
+            public void onNewPicture(WebView view, Picture picture) {
+                if(!isPreview()) {
+                    Picture pictureObj = view.capturePicture();
+
+                    Bitmap bitmap = Bitmap.createBitmap(
+                            pictureObj.getWidth(),
+                            pictureObj.getHeight(),
+                            Bitmap.Config.ARGB_8888);
+
+                    Canvas canvas = new Canvas(bitmap);
+                    pictureObj.draw(canvas);
+                    whiteToTransparent(bitmap);
+
+                    handleDoneWithBitmap(bitmap);
+                }
+            }
+        });
+
+
 
         String resultHtml = textStyle.buildHtml(strings);
 
@@ -296,7 +251,6 @@ public class TextPngBuilderActivity extends ActionBarActivity {
     }
 
     private boolean handleDoneWithBitmap(Bitmap bitmap) {
-        hidePopupWindow();
         if(bitmap == null) {
             showMessage("No text set.");
             setResult(Activity.RESULT_CANCELED);
