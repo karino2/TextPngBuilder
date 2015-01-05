@@ -19,7 +19,9 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.webkit.WebView;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.PopupWindow;
@@ -29,6 +31,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,24 +43,6 @@ public class TextPngBuilderActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text_png_builder);
-
-
-        NumberComboBox sizeBox = (NumberComboBox)findViewById(R.id.size_combobox);
-        sizeBox.setIntegerValue(12);
-        sizeBox.findViewById(R.id.combo_edit).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                hidePopupWindow();
-            }
-        });
-        ComboBox fontFamily = (ComboBox) findViewById(R.id.fontfamily_combobox);
-        fontFamily.setStringValue("Verdana, Roboto, sans-serif");
-        fontFamily.findViewById(R.id.combo_edit).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                hidePopupWindow();
-            }
-        });
 
         EditText et = (EditText)findViewById(R.id.editText);
         et.requestFocus();
@@ -74,6 +59,14 @@ public class TextPngBuilderActivity extends ActionBarActivity {
                 hidePopupWindow();
             }
         });
+
+        ((Button)findViewById(R.id.buttonStyle)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showStylePopup();
+            }
+        });
+
 
     }
 
@@ -107,38 +100,95 @@ public class TextPngBuilderActivity extends ActionBarActivity {
         String text = et.getText().toString();
         List<String> strings = stringToStringList(text);
 
-        if(isChecked(R.id.checkVertical)) {
-            handleDoneWithVerticalTextList(strings);
-        }else {
-            handleDoneWithHorizontalTextList(strings);
-        }
-    }
-
-    private void handleDoneWithHorizontalTextList(List<String> strings) {
-        handleDoneWithTextList(strings, false);
+        handleDoneWithTextList(strings);
     }
 
 
     boolean preview = false;
     boolean isPreview() {
         return preview;
-        // return isChecked(R.id.checkTest);
     }
 
-    private boolean isChecked(int resId) {
-        CheckBox box = (CheckBox)findViewById(resId);
-        return box.isChecked();
+    @Override
+    protected void onStop() {
+        super.onStop();
+        closeStylePopup();
     }
+
+    private void closeStylePopup() {
+        if(stylePopup != null) {
+            stylePopup.dismiss();
+            stylePopup = null;
+            styleView = null;
+        }
+    }
+
+    TextStyle textStyle = new TextStyle();
+
+    PopupWindow stylePopup;
+    View styleView;
+
+    private void showStylePopup()
+    {
+        if(stylePopup == null) {
+            LayoutInflater inflater = getLayoutInflater();
+            styleView = inflater.inflate(R.layout.popup_stylesetting, null);
+
+            NumberComboBox sizeBox = (NumberComboBox)styleView.findViewById(R.id.size_combobox);
+            sizeBox.setIntegerValue(12);
+            sizeBox.findViewById(R.id.combo_edit).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    hidePopupWindow();
+                }
+            });
+            ComboBox fontFamily = (ComboBox) styleView.findViewById(R.id.fontfamily_combobox);
+            fontFamily.setStringValue("Verdana, Roboto, sans-serif");
+            fontFamily.findViewById(R.id.combo_edit).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    hidePopupWindow();
+                }
+            });
+
+            ((Button)styleView.findViewById(R.id.buttonClose)).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    closeStylePopup();
+                }
+            });
+
+
+            ((Button)styleView.findViewById(R.id.buttonApply)).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    TextStyle newStyle = new TextStyle(
+                            ((CheckBox) styleView.findViewById(R.id.checkVertical)).isChecked(),
+                            getFontFamily(styleView),
+                            getFontSize(styleView)
+                    );
+                    textStyle = newStyle;
+                    handlePreview();
+                }
+            });
+
+            View editText = findViewById(R.id.editText);
+            stylePopup = new PopupWindow(styleView,editText.getMeasuredWidth(), editText.getMeasuredHeight()*1/5, false);
+
+
+            stylePopup.showAsDropDown(findViewById(R.id.buttonStyle));
+
+        } else {
+            stylePopup.showAsDropDown(findViewById(R.id.buttonStyle));
+        }
+    }
+
+
 
     PopupWindow popupWindow;
     View popupView;
-    private void handleDoneWithVerticalTextList(List<String> strings) {
-        handleDoneWithTextList(strings, true);
 
-
-}
-
-    private void handleDoneWithTextList(List<String> strings, boolean isVertical) {
+    private void handleDoneWithTextList(List<String> strings) {
         if(popupView == null) {
             LayoutInflater inflater = getLayoutInflater();
             popupView = inflater.inflate(R.layout.popup_webview, null);
@@ -168,47 +218,32 @@ public class TextPngBuilderActivity extends ActionBarActivity {
             popupWindow = new PopupWindow(popupView,editText.getMeasuredWidth(), editText.getMeasuredHeight()*3/4, false);
 //            popupWindow = new PopupWindow(popupView, 600, 400, false);
             popupWindow.showAtLocation(findViewById(R.id.editText), Gravity.BOTTOM, 0, 0);
+
+
         } else {
             popupWindow.showAtLocation(findViewById(R.id.editText), Gravity.BOTTOM, 0, 0);
         }
 
+        if(stylePopup!= null) {
+            showStylePopup(); // try to re-order
+        }
+
         WebView webView = (WebView)popupView.findViewById(R.id.webView);
         webView.getSettings().setUseWideViewPort(true);
-        StringBuilder builder = new StringBuilder();
-        builder.append("<html><head><style>");
-        builder.append("body { ");
-        if(isVertical)
-            builder.append("-webkit-writing-mode: vertical-rl;");
 
-        builder.append("font-size: ");
-        builder.append(String.valueOf(getFontSize()));
-        builder.append("pt; ");
+        String resultHtml = textStyle.buildHtml(strings);
 
-        // font-family: "Bodoni MT", Didot, "Didot LT STD", "Hoefler Text", Garamond, "Times New Roman", serif;
-        builder.append("font-family: ");
-        builder.append(getFontFamily());
-        builder.append(";");
-
-        builder.append("}");
-        builder.append("</style></head><body><pre>");
-        for(String line : strings) {
-            builder.append(escapeHtml(line));
-            builder.append("<br>");
-        }
-        builder.append("</pre></body></html>");
-
-
-        webView.loadData(builder.toString(), "text/html; charset=UTF-8", null);
+        webView.loadData(resultHtml, "text/html; charset=UTF-8", null);
     }
 
-    private String getFontFamily() {
-        ComboBox combo = (ComboBox)findViewById(R.id.fontfamily_combobox);
+    private String getFontFamily(View parent) {
+        ComboBox combo = (ComboBox)parent.findViewById(R.id.fontfamily_combobox);
         // simple sanitize.
         return combo.getStringValue().replace("}", "");
     }
 
-    private int getFontSize() {
-        NumberComboBox number = (NumberComboBox)findViewById(R.id.size_combobox);
+    private int getFontSize(View parent) {
+        NumberComboBox number = (NumberComboBox)parent.findViewById(R.id.size_combobox);
         try {
             return number.getIntegerValue();
         }catch(NumberFormatException e) {
@@ -226,10 +261,6 @@ public class TextPngBuilderActivity extends ActionBarActivity {
             }
         }
         bitmap.setPixels(buf, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-    }
-
-    private String escapeHtml(String line) {
-        return line.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
     }
 
 

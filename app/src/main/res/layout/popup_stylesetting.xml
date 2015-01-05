@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#C08080FF"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <CheckBox
+            android:id="@+id/checkVertical"
+            android:text="Vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <com.livejournal.karino2.textpngbuilder.ComboBox
+            android:id="@+id/fontfamily_combobox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+></com.livejournal.karino2.textpngbuilder.ComboBox>
+
+        <com.livejournal.karino2.textpngbuilder.NumberComboBox
+            android:id="@+id/size_combobox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+></com.livejournal.karino2.textpngbuilder.NumberComboBox>
+
+        </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/label_button_apply"
+        android:id="@+id/buttonApply"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/label_button_close"
+        android:id="@+id/buttonClose"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+</RelativeLayout>

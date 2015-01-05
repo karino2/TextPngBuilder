@@ -7,21 +7,14 @@
     <LinearLayout android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <CheckBox
-            android:id="@+id/checkVertical"
-            android:text="Vertical"
+        <Button
+            style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-        <com.livejournal.karino2.textpngbuilder.NumberComboBox
-            android:id="@+id/size_combobox"
-            android:layout_marginLeft="5dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"></com.livejournal.karino2.textpngbuilder.NumberComboBox>
-        <com.livejournal.karino2.textpngbuilder.ComboBox
-            android:id="@+id/fontfamily_combobox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"></com.livejournal.karino2.textpngbuilder.ComboBox>
-        </LinearLayout>
+            android:layout_height="35dp"
+            android:text="@string/label_button_style"
+            android:id="@+id/buttonStyle" />
+
+    </LinearLayout>
     <EditText
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
