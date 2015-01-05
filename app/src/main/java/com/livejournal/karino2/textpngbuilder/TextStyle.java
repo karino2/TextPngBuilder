@@ -1,5 +1,8 @@
 package com.livejournal.karino2.textpngbuilder;
 
+import android.os.Bundle;
+
+import java.io.File;
 import java.util.List;
 
 /**
@@ -7,13 +10,15 @@ import java.util.List;
  */
 public class TextStyle {
     public TextStyle() {
-        this(false, "Verdana, Roboto, sans-serif", 12);
+        this(false, "Verdana, Roboto, sans-serif", 12, null);
     }
 
-    public TextStyle(boolean isvertical, String fontFam, int fontSz) {
+    File fontPath;
+    public TextStyle(boolean isvertical, String fontFam, int fontSz, File externalFont) {
         vertical = isvertical;
         fontFamily = fontFam;
         fontSize = fontSz;
+        fontPath = externalFont;
     }
 
     String fontFamily;
@@ -33,9 +38,54 @@ public class TextStyle {
     }
 
 
+    public String getFontPathString()
+    {
+        if(fontPath == null)
+            return "";
+        return fontPath.getAbsolutePath();
+    }
+
+
+    boolean isExternalFontExist() {
+        if(fontPath != null &&
+                fontPath.exists())
+            return true;
+        return false;
+    }
+
+    public void saveInstanceState(Bundle outState) {
+        outState.putBoolean("IS_VERTICAL", vertical);
+        outState.putInt("FONT_SIZE", fontSize);
+        outState.putString("FONT_FAMILY", fontFamily);
+        outState.putString("EXTERNAL_FONT_PATH", getFontPathString());
+    }
+
+    public void restoreInstanceState(Bundle savedInstanceState) {
+        vertical = savedInstanceState.getBoolean("IS_VERTICAL");
+        fontSize = savedInstanceState.getInt("FONT_SIZE");
+        fontFamily = savedInstanceState.getString("FONT_FAMILY");
+        String fontPathStr = savedInstanceState.getString("EXTERNAL_FONT_PATH");
+        if(!fontPathStr.equals(""))
+            fontPath = null;
+        else
+            fontPath = new File(fontPathStr);
+    }
+
+    public void setFontPath(File newFontPath) {
+        fontPath = newFontPath;
+    }
+
     public String buildHtml(List<String> strings) {
         StringBuilder builder = new StringBuilder();
         builder.append("<html><head><style>");
+
+        if(isExternalFontExist()) {
+            // builder.append("@font-face {font-family: EXTERNAL; src:url(\"file:///storage/sdcard0/fonts/ipam.otf\"); }  ");
+            builder.append(
+                    String.format("@font-face {font-family: EXTERNAL; src:url(\"file://%s\"); }  ", fontPath.getAbsolutePath())
+            );
+        }
+
         builder.append("body { ");
         if(isVertical())
             builder.append("-webkit-writing-mode: vertical-rl;");
@@ -49,19 +99,23 @@ public class TextStyle {
         builder.append(getFontFamily());
         builder.append(";");
 
+
         builder.append("}");
-        builder.append("</style></head><body><pre>");
+        builder.append("</style></head><body>");
         for(String line : strings) {
             builder.append(escapeHtml(line));
             builder.append("<br>");
         }
-        builder.append("</pre></body></html>");
+        builder.append("</body></html>");
         return builder.toString();
 
     }
 
     private String escapeHtml(String line) {
-        return line.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+        return line.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll(" ", "&nbsp;");
     }
 
+    public void setFontFamily(String fontFamily) {
+        this.fontFamily = fontFamily;
+    }
 }

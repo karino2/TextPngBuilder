@@ -6,5 +6,6 @@
     <string name="label_button_apply">Apply</string>
     <string name="label_button_style">style</string>
     <string name="label_button_close">Close</string>
+    <string name="label_external_font">External font</string>
 
 </resources>

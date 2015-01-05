@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 
 public class ComboBox extends LinearLayout implements OnClickListener, android.view.View.OnClickListener {
 
+    public static final String EXTERNAL_NAME = "EXTERNAL";
     EditText mText;
     AlertDialog mPopup;
 
@@ -38,7 +39,8 @@ public class ComboBox extends LinearLayout implements OnClickListener, android.v
 	private String[] mCandidates = new String[] {"Verdana, Roboto, sans-serif",
             "TimesNewRoman, \"Times New Roman\", Times, Baskerville, Georgia, serif",
             "\"Courier New\", Courier, \"Lucida Sans Typewriter\", \"Lucida Typewriter\", monospace",
-            "Rockwell, \"Courier Bold\", Courier, Georgia, Times, \"Times New Roman\", serif",   "Verdana, Roboto, 'Droid Sans', sans-serif"};
+            "Rockwell, \"Courier Bold\", Courier, Georgia, Times, \"Times New Roman\", serif",   "Verdana, Roboto, 'Droid Sans', sans-serif",
+    "EXTERNAL"};
 
     public void setCandidates(String[] candidates) {
         mCandidates = candidates;

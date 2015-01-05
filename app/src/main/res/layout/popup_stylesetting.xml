@@ -6,7 +6,8 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:id="@+id/linearLayout">
         <CheckBox
             android:id="@+id/checkVertical"
             android:text="Vertical"
@@ -44,5 +45,35 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/label_external_font"
+        android:id="@+id/textView"
+        android:layout_below="@+id/linearLayout"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:paddingTop="10dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editTextFontPath"
+        android:layout_below="@+id/linearLayout"
+        android:layout_toLeftOf="@+id/buttonBrowseFontPath"
+        android:layout_toRightOf="@+id/textView"
+        android:layout_toEndOf="@+id/textView" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="..."
+        android:id="@+id/buttonBrowseFontPath"
+        android:layout_below="@+id/linearLayout"
+        android:layout_alignRight="@+id/buttonApply"
+        android:layout_alignEnd="@+id/buttonApply"
+        android:layout_alignBottom="@+id/editTextFontPath" />
 
 </RelativeLayout>
